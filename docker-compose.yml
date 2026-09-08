@@ -1,0 +1,67 @@
+name: carpool
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-carpool}
+      POSTGRES_USER: ${POSTGRES_USER:-carpool}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+      target: development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Database: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-carpool};Username=${POSTGRES_USER:-carpool};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:3000}
+      Database__ApplyMigrations: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    volumes:
+      - ./src/backend:/workspace/src/backend
+      - backend_bin:/workspace/src/backend/Carpool.Api/bin
+      - backend_obj:/workspace/src/backend/Carpool.Api/obj
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: src/frontend
+      target: development
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./src/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    depends_on:
+      backend:
+        condition: service_started
+    command: sh -c "npm ci && npm run dev -- --webpack"
+
+volumes:
+  postgres_data:
+  backend_bin:
+  backend_obj:
+  frontend_node_modules:
+  frontend_next:

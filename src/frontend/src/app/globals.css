@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+}
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #183c35;
+  background: #f3f7f5;
+}
+body {
+  margin: 0;
+}
+main {
+  width: min(100% - 2rem, 44rem);
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+h1 {
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  line-height: 1.1;
+}
+p {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #d5e3dd;
+  border-radius: 1rem;
+}
+h2 {
+  font-size: 1.2rem;
+  margin-top: 0;
+}
+button {
+  min-height: 44px;
+  padding: 0.7rem 1.1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #176451;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+button:focus-visible {
+  outline: 3px solid #b45e00;
+  outline-offset: 3px;
+}
+[data-state="error"] {
+  color: #a32222;
+}
+.note {
+  color: #52655e;
+  font-size: 0.9rem;
+}
